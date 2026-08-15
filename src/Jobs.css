@@ -1,0 +1,437 @@
+.jobs-view {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.jobs-intro .jobs-search {
+  display: block;
+  margin-top: 1.15rem;
+}
+
+.jobs-search input {
+  width: min(420px, 100%);
+  min-height: 2.9rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(14, 22, 33, 0.72);
+  color: #f4f7fb;
+  font: inherit;
+  outline: none;
+}
+
+.jobs-search input::placeholder {
+  color: #7f8c9c;
+}
+
+.jobs-search input:focus {
+  border-color: rgba(46, 184, 196, 0.55);
+  box-shadow: 0 0 0 3px rgba(46, 184, 196, 0.15);
+}
+
+.jobs-message {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border-left: 3px solid #2eb8c4;
+  background: rgba(46, 184, 196, 0.12);
+  color: #8fe0e8;
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+
+.jobs-error {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border-left: 3px solid #e879a9;
+  background: rgba(232, 121, 169, 0.12);
+  color: #f5b8d0;
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+
+.jobs-section-title {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  color: #2eb8c4;
+}
+
+.jobs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.jobs-item {
+  display: grid;
+  gap: 1rem;
+  padding: 1.1rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.8rem;
+  background: rgba(14, 22, 33, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@media (min-width: 720px) {
+  .jobs-item {
+    grid-template-columns: 1fr auto;
+    align-items: start;
+  }
+}
+
+.jobs-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9mm;
+  align-items: center;
+}
+
+.jobs-about {
+  margin-top: 0.85rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(46, 184, 196, 0.28);
+  border-radius: 0.7rem;
+  background: rgba(46, 184, 196, 0.08);
+}
+
+.jobs-about h4 {
+  margin: 0 0 0.4rem;
+  color: #2eb8c4;
+  font-size: 0.9rem;
+}
+
+.jobs-about p {
+  margin: 0 !important;
+  color: #d7e0ea !important;
+  line-height: 1.55;
+}
+
+.jobs-about-meta {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(46, 184, 196, 0.28);
+}
+
+@media (min-width: 640px) {
+  .jobs-about-meta {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.jobs-about-meta span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #9aa8b8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.jobs-about-meta strong {
+  display: block;
+  color: #f4f7fb;
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.jobs-about-btn {
+  min-height: 2.7rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: 0.55rem;
+  border: 1px solid #2eb8c4;
+  background: transparent;
+  color: #2eb8c4;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.jobs-about-btn:hover {
+  background: rgba(46, 184, 196, 0.12);
+}
+
+.jobs-item h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #fff;
+}
+
+.jobs-item p {
+  margin: 0.3rem 0 0;
+  color: #9aa8b8;
+  font-size: 0.92rem;
+}
+
+.jobs-deadline {
+  font-weight: 650;
+  color: #d7e0ea !important;
+}
+
+.jobs-status {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.jobs-status-pending {
+  color: #2eb8c4;
+}
+
+.jobs-status-accepted {
+  color: #5ad4a8;
+}
+
+.jobs-status-denied {
+  color: #ff4d6d;
+}
+
+.jobs-apply {
+  min-height: 2.7rem;
+  padding: 0.65rem 1.2rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: #2eb8c4;
+  color: #0b1120;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.jobs-apply:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.jobs-apply:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.jobs-empty {
+  margin: 0;
+  color: #9aa8b8;
+}
+
+.jobs-apps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.jobs-apps li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  background: rgba(14, 22, 33, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #9aa8b8;
+}
+
+.jobs-apps strong {
+  color: #fff;
+}
+
+.jobs-apps p {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}
+
+.team-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 800px) {
+  .team-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.team-card {
+  text-align: left;
+}
+
+.team-card img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.team-card h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.team-role {
+  margin: 0.35rem 0 0;
+  color: #2eb8c4;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.team-bio {
+  margin: 0.55rem 0 0;
+  color: #9aa8b8;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.about-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .about-layout {
+    grid-template-columns: 1.05fr 1fr;
+    align-items: stretch;
+  }
+}
+
+.about-visual {
+  padding: 0.75rem;
+}
+
+.about-visual img {
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  object-fit: cover;
+  border-radius: 0.7rem;
+}
+
+.about-copy h2 {
+  margin: 0 0 0.9rem;
+  color: #2eb8c4;
+  font-size: 1.25rem;
+}
+
+.about-copy p {
+  margin: 0 0 1rem;
+  color: #c5d0db;
+  line-height: 1.65;
+}
+
+.about-copy a {
+  color: #2eb8c4;
+  font-weight: 650;
+}
+
+.account-grid {
+  display: grid;
+  gap: 1.1rem;
+}
+
+@media (min-width: 720px) {
+  .account-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.account-label {
+  margin: 0;
+  color: #9aa8b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.account-value {
+  margin: 0.35rem 0 0;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.account-form {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.account-subtitle {
+  margin: 1.35rem 0 0.85rem;
+  color: #2eb8c4;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.account-fields {
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 720px) {
+  .account-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .account-field-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.account-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.account-field span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #c5d0db;
+}
+
+.account-field input,
+.account-field select,
+.account-field textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.55rem;
+  background: rgba(14, 22, 33, 0.45);
+  color: #f4f7fb;
+  font: inherit;
+  outline: none;
+}
+
+.account-field textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.account-field input:focus,
+.account-field select:focus,
+.account-field textarea:focus {
+  border-color: #2eb8c4;
+  box-shadow: 0 0 0 3px rgba(46, 184, 196, 0.16);
+}
+
+.account-field select option {
+  color: #0b1120;
+}
+
+.account-field input[type='file'] {
+  padding: 0.55rem;
+  cursor: pointer;
+}
+
+.account-file-note {
+  margin: 0.15rem 0 0;
+  color: #2eb8c4;
+  font-size: 0.88rem;
+}
+
+.account-save-btn {
+  justify-self: start;
+}

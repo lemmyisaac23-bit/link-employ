@@ -1,0 +1,347 @@
+.admin-page {
+  min-height: 100svh;
+  background: transparent;
+  color: #f4f7fb;
+}
+
+.admin-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem clamp(1.25rem, 4vw, 3rem);
+  background: rgba(11, 18, 27, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f4f7fb;
+}
+
+.admin-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 650;
+  color: #f4f7fb;
+}
+
+.admin-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.admin-user {
+  display: none;
+  font-size: 0.88rem;
+  color: rgba(244, 247, 245, 0.75);
+}
+
+@media (min-width: 720px) {
+  .admin-user {
+    display: inline;
+  }
+}
+
+.admin-signout {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: transparent;
+  color: #f4f7fb;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.55rem 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-signout:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.admin-main {
+  padding: clamp(1.75rem, 5vw, 3rem) clamp(1.25rem, 4vw, 3rem) 3rem;
+  display: grid;
+  gap: 1.75rem;
+}
+
+.admin-intro {
+  padding: 1.25rem 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(23, 34, 50, 0.52);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.admin-intro h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  color: #f4f7fb;
+}
+
+.admin-intro p {
+  margin: 0.55rem 0 0;
+  color: #9aa8b8;
+}
+
+.admin-stats {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 720px) {
+  .admin-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.admin-stat {
+  padding: 1.25rem 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(23, 34, 50, 0.52);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.admin-stat-value {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 650;
+  color: #2eb8c4;
+}
+
+.admin-stat-label {
+  margin: 0.35rem 0 0;
+  color: #9aa8b8;
+  font-size: 0.95rem;
+}
+
+.admin-panel {
+  padding: 1.35rem 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(23, 34, 50, 0.52);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.admin-panel h2 {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: #2eb8c4;
+}
+
+.admin-panel-note {
+  margin: 0 0 1.1rem;
+  color: #9aa8b8;
+  font-size: 0.95rem;
+}
+
+.admin-job-form {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1.35rem;
+}
+
+@media (min-width: 720px) {
+  .admin-job-form {
+    grid-template-columns: 1.2fr 1fr auto;
+    align-items: end;
+  }
+}
+
+@media (min-width: 900px) {
+  .admin-job-form {
+    grid-template-columns: 1.1fr 1fr 0.9fr auto;
+  }
+}
+
+.admin-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.admin-field span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #c5d0db;
+}
+
+.admin-field input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(14, 22, 33, 0.45);
+  color: #f4f7fb;
+  font: inherit;
+  outline: none;
+}
+
+.admin-field input:focus {
+  border-color: #2eb8c4;
+  box-shadow: 0 0 0 3px rgba(46, 184, 196, 0.16);
+}
+
+.admin-job-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.admin-inline-error {
+  margin: 0 0 1rem;
+  color: #ffb4a8;
+  font-size: 0.92rem;
+}
+
+.admin-empty {
+  margin: 0;
+  color: #9aa8b8;
+  font-size: 0.98rem;
+}
+
+.admin-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.admin-list li {
+  display: grid;
+  gap: 0.15rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-list li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.admin-list-name {
+  font-weight: 650;
+  color: #f4f7fb;
+}
+
+.admin-list-meta {
+  font-size: 0.92rem;
+  color: #9aa8b8;
+}
+
+.admin-apps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-app {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(14, 22, 33, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@media (min-width: 720px) {
+  .admin-app {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+}
+
+.admin-app-copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.admin-app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.admin-btn {
+  min-height: 2.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-btn:hover {
+  transform: translateY(-1px);
+}
+
+.admin-btn-accept {
+  background: #2eb8c4;
+  color: #0b1120;
+}
+
+.admin-btn-accept:hover {
+  filter: brightness(1.05);
+}
+
+.admin-btn-deny {
+  background: transparent;
+  border-color: #ff4d6d;
+  color: #ff4d6d;
+}
+
+.admin-btn-deny:hover {
+  background: rgba(255, 77, 109, 0.1);
+}
+
+.admin-btn-secondary {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #c5d0db;
+}
+
+.admin-btn-secondary:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-btn-end {
+  background: transparent;
+  border-color: #2eb8c4;
+  color: #2eb8c4;
+}
+
+.admin-btn-end:hover {
+  background: rgba(46, 184, 196, 0.1);
+}
+
+.admin-status-accepted {
+  color: #5ad4a8;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+
+.admin-status-denied {
+  color: #ff4d6d;
+  font-weight: 650;
+  text-transform: capitalize;
+}

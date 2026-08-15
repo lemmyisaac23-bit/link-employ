@@ -1,0 +1,209 @@
+.signup-page {
+  min-height: 100svh;
+  background: transparent;
+  color: var(--white);
+}
+
+.signup-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem clamp(1.25rem, 4vw, 3rem);
+  background: rgba(11, 18, 27, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.signup-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--white);
+}
+
+.signup-back {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.signup-back:hover {
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.signup-main {
+  display: grid;
+  place-items: start center;
+  padding: 1rem clamp(1rem, 4vw, 2rem) 3rem;
+}
+
+.signup-form {
+  width: min(520px, 100%);
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.5rem, 4vw, 2rem);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: rgba(23, 34, 50, 0.52);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.signup-form h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4vw, 2.1rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.signup-switch {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  color: rgba(232, 241, 238, 0.72);
+}
+
+.signup-switch a {
+  color: var(--teal);
+  font-weight: 650;
+  border-bottom: 1px solid color-mix(in srgb, var(--teal) 45%, transparent);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.signup-switch a:hover {
+  color: #7ad4c4;
+  border-color: #7ad4c4;
+}
+
+.signup-row {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .signup-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.signup-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.signup-field > span:first-child {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: rgba(232, 241, 238, 0.78);
+}
+
+.signup-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.signup-icon {
+  position: absolute;
+  left: 0.85rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: rgba(232, 241, 238, 0.45);
+  pointer-events: none;
+}
+
+.signup-input-wrap input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem 2.75rem 0.75rem 2.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.55rem;
+  background: rgba(14, 22, 33, 0.45);
+  color: var(--white);
+  font: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.signup-input-wrap input::placeholder {
+  color: rgba(232, 241, 238, 0.4);
+}
+
+.signup-input-wrap input:focus {
+  border-color: rgba(47, 158, 143, 0.75);
+  background: rgba(232, 241, 238, 0.96);
+  color: var(--ink);
+}
+
+.signup-input-wrap input:focus + .signup-eye,
+.signup-input-wrap:has(input:focus) .signup-icon {
+  color: rgba(11, 42, 58, 0.55);
+}
+
+.signup-eye {
+  position: absolute;
+  right: 0.45rem;
+  display: inline-grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: rgba(232, 241, 238, 0.5);
+  cursor: pointer;
+}
+
+.signup-eye:hover {
+  color: rgba(232, 241, 238, 0.85);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.signup-eye-icon {
+  position: static;
+  pointer-events: auto;
+}
+
+.signup-error,
+.signup-success {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.signup-error {
+  color: #ffb4a8;
+}
+
+.signup-success {
+  color: #9fe0d4;
+}
+
+.signup-submit {
+  margin-top: 0.35rem;
+  min-height: 3rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--teal);
+  color: var(--white);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.signup-submit:hover {
+  background: var(--teal-deep);
+  transform: translateY(-1px);
+}
