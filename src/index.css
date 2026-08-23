@@ -12,8 +12,8 @@
   --white: #ffffff;
   --radius: 14px;
   --shadow: 0 24px 60px rgba(11, 42, 58, 0.18);
-  --font-display: 'Syne', 'Segoe UI', sans-serif;
-  --font-body: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', sans-serif;
+  --font-body: 'Sora', 'Segoe UI', sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   color: var(--text);
   background: #0e1621;
