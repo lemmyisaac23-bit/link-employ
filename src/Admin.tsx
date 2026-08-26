@@ -8,7 +8,6 @@ import {
   getJobTypes,
   getTestimonials,
   getSupportTickets,
-  getUsers,
   removeJobType,
   setJobTypeStatus,
   updateApplicationStatus,
@@ -21,6 +20,7 @@ import {
   type SupportTicket,
   type Testimonial,
 } from './store'
+import { listRegisteredUsers, signOutCloud } from './cloudAuth'
 import './Admin.css'
 
 function defaultDeadlineValue() {
@@ -48,20 +48,34 @@ function Admin() {
   const [jobError, setJobError] = useState('')
 
   useEffect(() => {
-    if (!isAdminAuthenticated()) {
-      navigate('/signin', { replace: true })
-      return
+    let cancelled = false
+
+    async function load() {
+      if (!isAdminAuthenticated()) {
+        navigate('/signin', { replace: true })
+        return
+      }
+
+      const cloudUsers = await listRegisteredUsers()
+      if (cancelled) return
+
+      setUsers(cloudUsers)
+      setApplications(getApplications())
+      setJobs(getJobTypes())
+      setTestimonials(getTestimonials())
+      setTickets(getSupportTickets())
+      setReady(true)
     }
-    setUsers(getUsers())
-    setApplications(getApplications())
-    setJobs(getJobTypes())
-    setTestimonials(getTestimonials())
-    setTickets(getSupportTickets())
-    setReady(true)
+
+    void load()
+    return () => {
+      cancelled = true
+    }
   }, [navigate])
 
-  function handleSignOut() {
+  async function handleSignOut() {
     setAdminSession(false)
+    await signOutCloud()
     navigate('/signin')
   }
 

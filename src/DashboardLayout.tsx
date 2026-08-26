@@ -1,10 +1,7 @@
-import { NavLink, Link, useNavigate, Outlet } from 'react-router-dom'
+import { NavLink, Link, useNavigate, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState, type ReactNode } from 'react'
-import {
-  getUserSession,
-  setUserSession,
-  type UserSession,
-} from './auth'
+import { type UserSession } from './auth'
+import { restoreCloudSession, signOutCloud } from './cloudAuth'
 import './Dashboard.css'
 
 type NavItem = {
@@ -90,20 +87,51 @@ const navItems: NavItem[] = [
 
 function DashboardLayout() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [user, setUser] = useState<UserSession | null>(null)
   const [lang, setLang] = useState('English')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
-    const session = getUserSession()
-    if (!session) {
-      navigate('/signup', { replace: true })
-      return
+    let cancelled = false
+
+    async function loadSession() {
+      const session = await restoreCloudSession()
+      if (cancelled) return
+      if (!session) {
+        navigate('/signup', { replace: true })
+        return
+      }
+      setUser(session)
     }
-    setUser(session)
+
+    void loadSession()
+    return () => {
+      cancelled = true
+    }
   }, [navigate])
 
-  function handleLogout() {
-    setUserSession(null)
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!sidebarOpen) return
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setSidebarOpen(false)
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.body.style.overflow = ''
+    }
+  }, [sidebarOpen])
+
+  async function handleLogout() {
+    await signOutCloud()
     navigate('/')
   }
 
@@ -112,8 +140,23 @@ function DashboardLayout() {
   }
 
   return (
-    <div className="dash visual-page">
+    <div className={`dash visual-page${sidebarOpen ? ' sidebar-open' : ''}`}>
       <header className="dash-header">
+        <button
+          type="button"
+          className="dash-menu-btn"
+          aria-label={sidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={sidebarOpen}
+          aria-controls="dash-sidebar"
+          onClick={() => setSidebarOpen((open) => !open)}
+        >
+          <span className="dash-menu-bars" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        </button>
+
         <Link className="dash-brand" to="/jobs">
           <span className="dash-logo" aria-hidden="true">
             W
@@ -147,16 +190,37 @@ function DashboardLayout() {
         </div>
       </header>
 
+      <button
+        type="button"
+        className="dash-sidebar-backdrop"
+        aria-label="Close navigation menu"
+        tabIndex={sidebarOpen ? 0 : -1}
+        onClick={() => setSidebarOpen(false)}
+      />
+
       <div className="dash-body">
-        <aside className="dash-sidebar" aria-label="Dashboard">
+        <aside
+          id="dash-sidebar"
+          className="dash-sidebar"
+          aria-label="Dashboard"
+        >
           <div className="dash-sidebar-brand">
             <span className="dash-logo" aria-hidden="true">
               W
             </span>
             <span>WorklinksUs</span>
+            <button
+              type="button"
+              className="dash-sidebar-close"
+              aria-label="Close navigation menu"
+              onClick={() => setSidebarOpen(false)}
+            >
+              ×
+            </button>
           </div>
 
           <nav className="dash-side-nav">
+            <p className="dash-side-section">Menu</p>
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -175,6 +239,50 @@ function DashboardLayout() {
                 </span>
               </NavLink>
             ))}
+
+            <p className="dash-side-section dash-side-section-more dash-side-mobile-only">
+              More
+            </p>
+            <NavLink
+              to="/jobs"
+              end
+              className={({ isActive }) =>
+                `dash-side-link dash-side-mobile-only${isActive ? ' active' : ''}`
+              }
+            >
+              <span className="dash-side-main">
+                <span className="dash-side-label">Home</span>
+              </span>
+              <span className="dash-chevron" aria-hidden="true">
+                ›
+              </span>
+            </NavLink>
+            <NavLink
+              to="/jobs/team"
+              className={({ isActive }) =>
+                `dash-side-link dash-side-mobile-only${isActive ? ' active' : ''}`
+              }
+            >
+              <span className="dash-side-main">
+                <span className="dash-side-label">Team</span>
+              </span>
+              <span className="dash-chevron" aria-hidden="true">
+                ›
+              </span>
+            </NavLink>
+            <NavLink
+              to="/jobs/about"
+              className={({ isActive }) =>
+                `dash-side-link dash-side-mobile-only${isActive ? ' active' : ''}`
+              }
+            >
+              <span className="dash-side-main">
+                <span className="dash-side-label">About Us</span>
+              </span>
+              <span className="dash-chevron" aria-hidden="true">
+                ›
+              </span>
+            </NavLink>
           </nav>
 
           <button type="button" className="dash-side-logout" onClick={handleLogout}>

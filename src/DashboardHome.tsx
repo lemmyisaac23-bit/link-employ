@@ -70,6 +70,8 @@ function DashboardHome() {
           <img
             src={asset('images/dash-security.jpg')}
             alt="Professionals collaborating in a modern workplace"
+            loading="lazy"
+            decoding="async"
           />
         </figure>
       </section>

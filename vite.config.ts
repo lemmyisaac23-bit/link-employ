@@ -5,8 +5,4 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/',
-  build: {
-    // Avoid GitHub Pages quirks with a top-level /assets path
-    assetsDir: 'static',
-  },
 })

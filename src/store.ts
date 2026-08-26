@@ -80,6 +80,63 @@ const JOBS_KEY = 'worklinkus_job_types'
 const TESTIMONIALS_KEY = 'worklinkus_testimonials'
 const TICKETS_KEY = 'worklinkus_support_tickets'
 
+const LEGACY_USERS_KEY = 'employlink_users'
+const LEGACY_PROFILES_KEY = 'employlink_profiles'
+const LEGACY_APPLICATIONS_KEY = 'employlink_applications'
+const LEGACY_JOBS_KEY = 'employlink_job_types'
+const LEGACY_TESTIMONIALS_KEY = 'employlink_testimonials'
+const LEGACY_TICKETS_KEY = 'employlink_support_tickets'
+
+let didMigrateStorage = false
+
+function migrateLegacyStorage() {
+  if (didMigrateStorage || typeof localStorage === 'undefined') return
+  didMigrateStorage = true
+
+  const pairs: Array<[string, string]> = [
+    [LEGACY_USERS_KEY, USERS_KEY],
+    [LEGACY_PROFILES_KEY, PROFILES_KEY],
+    [LEGACY_APPLICATIONS_KEY, APPLICATIONS_KEY],
+    [LEGACY_JOBS_KEY, JOBS_KEY],
+    [LEGACY_TESTIMONIALS_KEY, TESTIMONIALS_KEY],
+    [LEGACY_TICKETS_KEY, TICKETS_KEY],
+  ]
+
+  for (const [legacyKey, nextKey] of pairs) {
+    const legacyRaw = localStorage.getItem(legacyKey)
+    if (!legacyRaw) continue
+
+    const currentRaw = localStorage.getItem(nextKey)
+    if (!currentRaw) {
+      localStorage.setItem(nextKey, legacyRaw)
+    } else if (nextKey === USERS_KEY) {
+      try {
+        const legacyUsers = JSON.parse(legacyRaw) as RegisteredUser[]
+        const currentUsers = JSON.parse(currentRaw) as RegisteredUser[]
+        const byEmail = new Map<string, RegisteredUser>()
+        for (const user of [...legacyUsers, ...currentUsers]) {
+          const email = user.email.trim().toLowerCase()
+          const prev = byEmail.get(email)
+          if (!prev) {
+            byEmail.set(email, { ...user, email })
+            continue
+          }
+          byEmail.set(email, {
+            ...prev,
+            ...user,
+            email,
+            password: user.password || prev.password,
+          })
+        }
+        localStorage.setItem(nextKey, JSON.stringify([...byEmail.values()]))
+      } catch {
+        // Keep current key if merge fails.
+      }
+    }
+    localStorage.removeItem(legacyKey)
+  }
+}
+
 const seedTestimonials: Testimonial[] = [
   {
     id: 'test-1',
@@ -229,6 +286,7 @@ const seedJobs: JobType[] = [
 ]
 
 function readJson<T>(key: string, fallback: T): T {
+  migrateLegacyStorage()
   try {
     const raw = localStorage.getItem(key)
     if (!raw) return fallback
@@ -239,11 +297,27 @@ function readJson<T>(key: string, fallback: T): T {
 }
 
 function writeJson<T>(key: string, value: T) {
-  localStorage.setItem(key, JSON.stringify(value))
+  migrateLegacyStorage()
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    throw new Error(
+      'Could not save data in this browser. Check storage permissions and try again.',
+    )
+  }
 }
 
 export function getUsers(): RegisteredUser[] {
   return readJson<RegisteredUser[]>(USERS_KEY, [])
+}
+
+export function findUserByEmail(email: string): RegisteredUser | null {
+  const normalized = email.trim().toLowerCase()
+  if (!normalized) return null
+  return (
+    getUsers().find((entry) => entry.email.trim().toLowerCase() === normalized) ||
+    null
+  )
 }
 
 function getProfiles(): UserProfile[] {
@@ -291,16 +365,51 @@ export function saveUserProfile(
 export function addUser(
   user: Omit<RegisteredUser, 'id' | 'createdAt'>,
 ): RegisteredUser {
+  const email = user.email.trim().toLowerCase()
+  const password = (user.password ?? '').trim()
+  if (!email) {
+    throw new Error('Please enter your email address.')
+  }
+  if (!password) {
+    throw new Error('Password is required.')
+  }
+
   const users = getUsers()
-  const existing = users.find(
-    (entry) => entry.email.toLowerCase() === user.email.toLowerCase(),
+  const existingIndex = users.findIndex(
+    (entry) => entry.email.trim().toLowerCase() === email,
   )
-  if (existing) {
-    throw new Error('An account with this email already exists.')
+
+  if (existingIndex >= 0) {
+    const existing = users[existingIndex]
+    if (existing.password && existing.password !== password) {
+      throw new Error(
+        'An account with this email already exists. Sign in instead.',
+      )
+    }
+
+    const updated: RegisteredUser = {
+      ...existing,
+      firstName: user.firstName.trim(),
+      lastName: user.lastName.trim(),
+      email,
+      phone: user.phone?.trim() || existing.phone,
+      country: user.country?.trim() || existing.country,
+      password,
+    }
+    const nextUsers = users.map((entry, index) =>
+      index === existingIndex ? updated : entry,
+    )
+    writeJson(USERS_KEY, nextUsers)
+    return updated
   }
 
   const next: RegisteredUser = {
-    ...user,
+    firstName: user.firstName.trim(),
+    lastName: user.lastName.trim(),
+    email,
+    phone: user.phone?.trim() || undefined,
+    country: user.country?.trim() || undefined,
+    password,
     id: `user-${Date.now()}`,
     createdAt: new Date().toISOString(),
   }
@@ -308,17 +417,31 @@ export function addUser(
   return next
 }
 
+export type CredentialCheck =
+  | { ok: true; user: RegisteredUser }
+  | { ok: false; reason: 'not_found' | 'bad_password' }
+
+export function checkUserCredentials(
+  email: string,
+  password: string,
+): CredentialCheck {
+  const user = findUserByEmail(email)
+  if (!user) {
+    return { ok: false, reason: 'not_found' }
+  }
+  const normalizedPassword = password.trim()
+  if (!user.password || user.password !== normalizedPassword) {
+    return { ok: false, reason: 'bad_password' }
+  }
+  return { ok: true, user }
+}
+
 export function findUserByCredentials(
   email: string,
   password: string,
 ): RegisteredUser | null {
-  const user = getUsers().find(
-    (entry) => entry.email.toLowerCase() === email.trim().toLowerCase(),
-  )
-  if (!user || !user.password || user.password !== password) {
-    return null
-  }
-  return user
+  const result = checkUserCredentials(email, password)
+  return result.ok ? result.user : null
 }
 
 export function addApplication(

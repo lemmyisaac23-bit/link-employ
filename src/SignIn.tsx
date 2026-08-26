@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { setAdminSession, setUserSession, validateAdminLogin } from './auth'
-import { findUserByCredentials } from './store'
+import { setAdminSession, validateAdminLogin } from './auth'
+import { signInWithCloud } from './cloudAuth'
+import { isSupabaseConfigured, supabase } from './supabaseClient'
 import './Signup.css'
 
 function SignIn() {
@@ -11,40 +12,48 @@ function SignIn() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [pending, setPending] = useState(false)
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError('')
 
-    if (!email.trim()) {
+    const normalizedEmail = email.trim()
+    const normalizedPassword = password.trim()
+
+    if (!normalizedEmail) {
       setError('Please enter your email address.')
       return
     }
-    if (!password) {
+    if (!normalizedPassword) {
       setError('Please enter your password.')
       return
     }
 
-    if (validateAdminLogin(email, password)) {
-      setAdminSession(true)
-      navigate('/admin')
-      return
-    }
+    setPending(true)
+    try {
+      if (validateAdminLogin(normalizedEmail, normalizedPassword)) {
+        setAdminSession(true)
+        // Sign admin into Supabase so RLS can load the full user list
+        if (supabase) {
+          await supabase.auth.signInWithPassword({
+            email: normalizedEmail.toLowerCase(),
+            password: normalizedPassword,
+          })
+        }
+        navigate('/admin')
+        return
+      }
 
-    const user = findUserByCredentials(email, password)
-    if (!user) {
-      setError('Invalid email or password.')
-      return
+      await signInWithCloud(normalizedEmail, normalizedPassword)
+      navigate('/jobs')
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Invalid email or password.',
+      )
+    } finally {
+      setPending(false)
     }
-
-    setUserSession({
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      country: user.country,
-    })
-    navigate('/jobs')
   }
 
   return (
@@ -65,6 +74,12 @@ function SignIn() {
           <p className="signup-switch">
             New to WorklinksUs? <Link to="/signup">Create an account</Link>
           </p>
+          {!isSupabaseConfigured && (
+            <p className="signup-error" role="status">
+              Cloud login is not configured yet. Sign-in only works on the device
+              where the account was created.
+            </p>
+          )}
 
           <label className="signup-field">
             <span>Email Address</span>
@@ -112,8 +127,8 @@ function SignIn() {
             </p>
           )}
 
-          <button className="signup-submit" type="submit">
-            Sign in
+          <button className="signup-submit" type="submit" disabled={pending}>
+            {pending ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
       </main>

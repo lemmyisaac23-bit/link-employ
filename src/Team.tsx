@@ -35,7 +35,12 @@ function Team() {
       <section className="team-grid" aria-label="Team members">
         {team.map((member) => (
           <article key={member.name} className="team-card dash-panel">
-            <img src={member.image} alt={member.name} />
+            <img
+              src={member.image}
+              alt={member.name}
+              loading="lazy"
+              decoding="async"
+            />
             <h2>{member.name}</h2>
             <p className="team-role">{member.role}</p>
             <p className="team-bio">{member.bio}</p>

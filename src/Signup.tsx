@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { setUserSession } from './auth'
-import { addUser } from './store'
+import { registerWithCloud } from './cloudAuth'
+import { isSupabaseConfigured } from './supabaseClient'
 import './Signup.css'
 
 function Signup() {
@@ -17,8 +17,9 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState('')
+  const [pending, setPending] = useState(false)
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError('')
 
@@ -30,37 +31,32 @@ function Signup() {
       setError('Please enter your email address.')
       return
     }
-    if (password.length < 8) {
+    if (password.trim().length < 8) {
       setError('Password must be at least 8 characters.')
       return
     }
-    if (password !== confirmPassword) {
+    if (password.trim() !== confirmPassword.trim()) {
       setError('Passwords do not match.')
       return
     }
 
+    setPending(true)
     try {
-      const user = addUser({
+      await registerWithCloud({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim(),
         phone: phone.trim() || undefined,
         country: country.trim() || undefined,
-        password,
-      })
-
-      setUserSession({
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        country: user.country,
+        password: password.trim(),
       })
       navigate('/jobs')
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Could not create your account.',
       )
+    } finally {
+      setPending(false)
     }
   }
 
@@ -82,6 +78,12 @@ function Signup() {
           <p className="signup-switch">
             Already have an account? <Link to="/signin">Sign in</Link>
           </p>
+          {!isSupabaseConfigured && (
+            <p className="signup-error" role="status">
+              Cloud login is not configured yet. Accounts will only work on this
+              device until Supabase keys are added.
+            </p>
+          )}
 
           <div className="signup-row">
             <label className="signup-field">
@@ -219,8 +221,8 @@ function Signup() {
             </p>
           )}
 
-          <button className="signup-submit" type="submit">
-            Create account
+          <button className="signup-submit" type="submit" disabled={pending}>
+            {pending ? 'Creating account…' : 'Create account'}
           </button>
         </form>
       </main>

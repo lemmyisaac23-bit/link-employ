@@ -20,11 +20,57 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   padding: 0.9rem clamp(1rem, 3vw, 1.75rem);
   background: rgba(11, 18, 27, 0.78);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--dash-line);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.dash-menu-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.55rem;
+  height: 2.55rem;
+  flex-shrink: 0;
+  border: 1px solid var(--dash-line);
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--dash-text);
+  cursor: pointer;
+}
+
+.dash-menu-bars {
+  display: grid;
+  gap: 0.28rem;
+  width: 1.15rem;
+}
+
+.dash-menu-bars span {
+  display: block;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.sidebar-open .dash-menu-bars span:nth-child(1) {
+  transform: translateY(0.34rem) rotate(45deg);
+}
+
+.sidebar-open .dash-menu-bars span:nth-child(2) {
+  opacity: 0;
+}
+
+.sidebar-open .dash-menu-bars span:nth-child(3) {
+  transform: translateY(-0.34rem) rotate(-45deg);
+}
+
+.dash-brand {
+  margin-right: auto;
 }
 
 .dash-brand,
@@ -109,14 +155,45 @@
 }
 
 .dash-sidebar {
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  width: 210px;
-  padding: 1rem 0.65rem 1rem;
-  background: rgba(11, 17, 32, 0.82);
-  backdrop-filter: blur(14px);
+  width: min(290px, 86vw);
+  padding: 1rem 0.75rem 1.15rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1.15rem, env(safe-area-inset-bottom));
+  background: rgba(11, 17, 32, 0.96);
+  backdrop-filter: blur(16px);
   border-right: 1px solid var(--dash-line);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 50;
+  transform: translateX(-105%);
+  transition: transform 0.25s var(--ease, ease);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sidebar-open .dash-sidebar {
+  transform: translateX(0);
+}
+
+.dash-sidebar-backdrop {
+  display: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgba(4, 8, 14, 0.55);
+  cursor: pointer;
+}
+
+.sidebar-open .dash-sidebar-backdrop {
+  display: block;
 }
 
 .dash-sidebar-brand {
@@ -125,6 +202,44 @@
   margin-bottom: 0.25rem;
   font-size: 0.95rem;
   gap: 0.5rem;
+  position: relative;
+  padding-right: 2.5rem;
+}
+
+.dash-sidebar-close {
+  position: absolute;
+  right: 0.15rem;
+  top: 0.1rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #d7dee8;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dash-sidebar-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dash-side-section {
+  margin: 0.35rem 0 0;
+  padding: 0 0.65rem;
+  color: #7f8c9c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dash-side-section-more {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--dash-line);
 }
 
 .dash-sidebar-brand .dash-logo {
@@ -135,7 +250,7 @@
 
 .dash-side-nav {
   display: grid;
-  gap: 1cm;
+  gap: 0.55rem;
   align-content: start;
   flex: 1;
 }
@@ -547,6 +662,12 @@
   filter: brightness(1.06);
 }
 
+@media (max-width: 899px) {
+  .dash-header .dash-logout {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .dash-support-fab span {
     position: absolute;
@@ -561,6 +682,16 @@
     height: 3.25rem;
     padding: 0;
     justify-content: center;
+  }
+
+  .dash-brand {
+    font-size: 1rem;
+  }
+
+  .dash-lang select {
+    min-height: 2.3rem;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.8rem;
   }
 }
 
@@ -614,6 +745,14 @@
 }
 
 @media (min-width: 900px) {
+  .dash-menu-btn,
+  .dash-sidebar-backdrop,
+  .dash-sidebar-close,
+  .dash-side-section,
+  .dash-side-mobile-only {
+    display: none;
+  }
+
   .dash-top-nav {
     display: flex;
   }
@@ -623,6 +762,19 @@
   }
 
   .dash-sidebar {
-    display: flex;
+    position: sticky;
+    top: 4.1rem;
+    height: calc(100svh - 4.1rem);
+    width: 210px;
+    transform: none;
+    background: rgba(11, 17, 32, 0.82);
+  }
+
+  .dash-side-nav {
+    gap: 1cm;
+  }
+
+  .dash-sidebar-brand {
+    padding-right: 0.45rem;
   }
 }

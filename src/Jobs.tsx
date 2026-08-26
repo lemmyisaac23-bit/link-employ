@@ -68,7 +68,12 @@ function JobsHome() {
   return (
     <div className="jobs-view">
       <section className="dash-panel dash-feature-card dash-section-banner">
-        <img src={asset('images/dash-apply.jpg')} alt="" />
+        <img
+          src={asset('images/dash-apply.jpg')}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
         <div>
           <h1 className="dash-title">Open Positions</h1>
           <p className="dash-stat-value">{filteredJobs.length}</p>

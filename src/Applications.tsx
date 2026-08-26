@@ -19,7 +19,12 @@ function Applications() {
   return (
     <div className="jobs-view">
       <section className="dash-panel dash-feature-card dash-section-banner">
-        <img src={asset('images/dash-match.jpg')} alt="" />
+        <img
+          src={asset('images/dash-match.jpg')}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
         <div>
           <h1 className="dash-title">My Application Status</h1>
           <p className="dash-stat-value">{pending}</p>

@@ -35,6 +35,8 @@ function App() {
               src={asset('images/hero-workplace.jpg')}
               alt=""
               className="hero-image"
+              fetchPriority="high"
+              decoding="async"
             />
             <div className="hero-veil" />
           </div>
@@ -98,6 +100,8 @@ function App() {
             <img
               src={asset('images/career-connection.jpg')}
               alt="Professionals connecting in a modern US workplace"
+              loading="lazy"
+              decoding="async"
             />
           </figure>
         </section>
@@ -134,6 +138,8 @@ function App() {
             <img
               src={asset('images/about-bridge.jpg')}
               alt="Professionals collaborating across a modern workplace"
+              loading="lazy"
+              decoding="async"
             />
           </figure>
           <div className="section-copy employers-copy">
@@ -158,17 +164,32 @@ function App() {
           </div>
           <ul className="home-team-list">
             <li>
-              <img src={asset('images/team-amara.jpg')} alt="" />
+              <img
+                src={asset('images/team-amara.jpg')}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
               <h3>Amara Quinn</h3>
               <p>Head of Talent Partnerships</p>
             </li>
             <li>
-              <img src={asset('images/team-diego.jpg')} alt="" />
+              <img
+                src={asset('images/team-diego.jpg')}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
               <h3>Diego Morales</h3>
               <p>Director of Employer Success</p>
             </li>
             <li>
-              <img src={asset('images/team-priya.jpg')} alt="" />
+              <img
+                src={asset('images/team-priya.jpg')}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
               <h3>Priya Shah</h3>
               <p>Candidate Experience Lead</p>
             </li>

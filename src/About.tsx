@@ -17,6 +17,8 @@ function About() {
           <img
             src={asset('images/about-bridge.jpg')}
             alt="Professionals collaborating across a modern workplace"
+            loading="lazy"
+            decoding="async"
           />
         </figure>
 
