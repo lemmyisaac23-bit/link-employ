@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WorklinksUs</title>
+    <!-- GitHub Pages SPA fallback for custom domain (site root) -->
+    <script>
+      const segmentCount = 0
+      const { pathname, search, hash, protocol, hostname, port } = location
+      const base = pathname.split('/').slice(0, 1 + segmentCount).join('/') || ''
+      const route = pathname
+        .split('/')
+        .slice(1 + segmentCount)
+        .join('/')
+        .replace(/&/g, '~and~')
+      const query = search
+        ? '&' + search.slice(1).replace(/&/g, '~and~')
+        : ''
+      location.replace(
+        `${protocol}//${hostname}${port ? ':' + port : ''}${base}/?/${route}${query}${hash}`,
+      )
+    </script>
+  </head>
+  <body></body>
+</html>
