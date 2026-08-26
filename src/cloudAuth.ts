@@ -6,7 +6,7 @@ import {
   getUsers,
   type RegisteredUser,
 } from './store'
-import { isSupabaseConfigured, requireSupabase, supabase } from './supabaseClient'
+import { isSupabaseConfigured, requireSupabase, SITE_URL, supabase } from './supabaseClient'
 
 export type CloudProfile = {
   id: string
@@ -96,6 +96,13 @@ function friendlyAuthError(message: string): string {
   if (lower.includes('email not confirmed')) {
     return 'Confirm your email before signing in, or disable email confirmation in Supabase Auth settings.'
   }
+  if (
+    lower.includes('invalid path') ||
+    lower.includes('redirect') ||
+    lower.includes('request url')
+  ) {
+    return 'Signup redirect URL is not allowed. In Supabase go to Authentication → URL Configuration and set Site URL to https://worklinkus.com, then add https://worklinkus.com/** and https://www.worklinkus.com/** under Redirect URLs.'
+  }
   if (lower.includes('password')) {
     return message
   }
@@ -139,7 +146,9 @@ export async function registerWithCloud(
         phone: input.phone?.trim() || '',
         country: input.country?.trim() || '',
       },
-      emailRedirectTo: window.location.origin,
+      // Always use the production site URL so mobile www/custom-domain
+      // origins do not fail Supabase redirect validation.
+      emailRedirectTo: `${SITE_URL}/jobs`,
     },
   })
 
@@ -157,15 +166,30 @@ export async function registerWithCloud(
     }
   }
 
-  const profile =
-    (await fetchProfile(data.user.id)) ||
-    (await upsertProfile(data.user.id, {
-      firstName: input.firstName,
-      lastName: input.lastName,
+  let profile: CloudProfile | null = null
+  try {
+    profile =
+      (await fetchProfile(data.user.id)) ||
+      (await upsertProfile(data.user.id, {
+        firstName: input.firstName,
+        lastName: input.lastName,
+        email,
+        phone: input.phone,
+        country: input.country,
+      }))
+  } catch (profileError) {
+    // Auth succeeded; keep the session even if profile row write fails.
+    console.warn('Profile sync failed:', profileError)
+    profile = {
+      id: data.user.id,
+      first_name: input.firstName.trim(),
+      last_name: input.lastName.trim(),
       email,
-      phone: input.phone,
-      country: input.country,
-    }))
+      phone: input.phone?.trim() || null,
+      country: input.country?.trim() || null,
+      created_at: new Date().toISOString(),
+    }
+  }
 
   const session = profileToSession(profile)
   setUserSession(session)
@@ -210,15 +234,33 @@ export async function signInWithCloud(
   if (!data.user) throw new Error('Invalid email or password.')
 
   const meta = data.user.user_metadata || {}
-  const profile =
-    (await fetchProfile(data.user.id)) ||
-    (await upsertProfile(data.user.id, {
-      firstName: String(meta.first_name || normalizedEmail.split('@')[0] || 'User'),
-      lastName: String(meta.last_name || ''),
+  let profile: CloudProfile | null = null
+  try {
+    profile =
+      (await fetchProfile(data.user.id)) ||
+      (await upsertProfile(data.user.id, {
+        firstName: String(
+          meta.first_name || normalizedEmail.split('@')[0] || 'User',
+        ),
+        lastName: String(meta.last_name || ''),
+        email: normalizedEmail,
+        phone: meta.phone ? String(meta.phone) : undefined,
+        country: meta.country ? String(meta.country) : undefined,
+      }))
+  } catch (profileError) {
+    console.warn('Profile sync failed:', profileError)
+    profile = {
+      id: data.user.id,
+      first_name: String(
+        meta.first_name || normalizedEmail.split('@')[0] || 'User',
+      ),
+      last_name: String(meta.last_name || ''),
       email: normalizedEmail,
-      phone: meta.phone ? String(meta.phone) : undefined,
-      country: meta.country ? String(meta.country) : undefined,
-    }))
+      phone: meta.phone ? String(meta.phone) : null,
+      country: meta.country ? String(meta.country) : null,
+      created_at: new Date().toISOString(),
+    }
+  }
 
   const session = profileToSession(profile)
   setUserSession(session)
@@ -238,15 +280,29 @@ export async function restoreCloudSession(): Promise<UserSession | null> {
 
   const user = data.session.user
   const meta = user.user_metadata || {}
-  const profile =
-    (await fetchProfile(user.id)) ||
-    (await upsertProfile(user.id, {
-      firstName: String(meta.first_name || user.email?.split('@')[0] || 'User'),
-      lastName: String(meta.last_name || ''),
+  let profile: CloudProfile | null = null
+  try {
+    profile =
+      (await fetchProfile(user.id)) ||
+      (await upsertProfile(user.id, {
+        firstName: String(meta.first_name || user.email?.split('@')[0] || 'User'),
+        lastName: String(meta.last_name || ''),
+        email: (user.email || '').toLowerCase(),
+        phone: meta.phone ? String(meta.phone) : undefined,
+        country: meta.country ? String(meta.country) : undefined,
+      }))
+  } catch (profileError) {
+    console.warn('Profile sync failed:', profileError)
+    profile = {
+      id: user.id,
+      first_name: String(meta.first_name || user.email?.split('@')[0] || 'User'),
+      last_name: String(meta.last_name || ''),
       email: (user.email || '').toLowerCase(),
-      phone: meta.phone ? String(meta.phone) : undefined,
-      country: meta.country ? String(meta.country) : undefined,
-    }))
+      phone: meta.phone ? String(meta.phone) : null,
+      country: meta.country ? String(meta.country) : null,
+      created_at: new Date().toISOString(),
+    }
+  }
 
   const session = profileToSession(profile)
   setUserSession(session)

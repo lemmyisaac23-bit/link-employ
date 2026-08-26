@@ -1,18 +1,25 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim()
-const supabaseAnonKey = (
-  import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
-)?.trim()
+function cleanEnv(value: string | undefined): string {
+  return (value ?? '').trim().replace(/\/+$/, '')
+}
+
+const supabaseUrl = cleanEnv(import.meta.env.VITE_SUPABASE_URL as string | undefined)
+const supabaseAnonKey = cleanEnv(
+  import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined,
+)
+
+export const SITE_URL = 'https://worklinkus.com'
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 
 export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(supabaseUrl!, supabaseAnonKey!, {
+  ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        flowType: 'pkce',
       },
     })
   : null
