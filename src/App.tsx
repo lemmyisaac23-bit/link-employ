@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { asset } from './asset'
-import { getJobTypes, type JobType } from './store'
+import { type JobType } from './store'
+import { fetchJobTypes } from './cloudData'
 import './App.css'
 
 function App() {
@@ -9,7 +10,13 @@ function App() {
   const [roles, setRoles] = useState<JobType[]>([])
 
   useEffect(() => {
-    setRoles(getJobTypes())
+    let cancelled = false
+    void fetchJobTypes().then((jobs) => {
+      if (!cancelled) setRoles(jobs)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   return (

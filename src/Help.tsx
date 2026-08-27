@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import type { UserSession } from './auth'
+import { type SupportTicket } from './store'
 import {
-  addSupportTicket,
-  getSupportTicketsForEmail,
-  type SupportTicket,
-} from './store'
+  createSupportTicket,
+  fetchSupportTicketsForEmail,
+} from './cloudData'
 import './Jobs.css'
 
 function Help() {
@@ -18,10 +18,16 @@ function Help() {
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
-    setTickets(getSupportTicketsForEmail(user.email))
+    let cancelled = false
+    void fetchSupportTicketsForEmail(user.email).then((items) => {
+      if (!cancelled) setTickets(items)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [user.email])
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError('')
     setSuccess('')
@@ -31,17 +37,22 @@ function Help() {
       return
     }
 
-    const updated = addSupportTicket({
-      name: `${user.firstName} ${user.lastName}`.trim(),
-      email: user.email,
-      subject: subject.trim(),
-      message: message.trim(),
-    })
-
-    setTickets(updated.filter((ticket) => ticket.email === user.email))
-    setSubject('')
-    setMessage('')
-    setSuccess('Support ticket submitted. An admin will review it soon.')
+    try {
+      const updated = await createSupportTicket({
+        name: `${user.firstName} ${user.lastName}`.trim(),
+        email: user.email,
+        subject: subject.trim(),
+        message: message.trim(),
+      })
+      setTickets(updated)
+      setSubject('')
+      setMessage('')
+      setSuccess('Support ticket submitted. An admin will review it soon.')
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Could not submit support ticket.',
+      )
+    }
   }
 
   return (

@@ -3,17 +3,6 @@ import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ADMIN_EMAIL, isAdminAuthenticated, setAdminSession } from './auth'
 import {
-  addJobType,
-  getApplications,
-  getJobTypes,
-  getTestimonials,
-  getSupportTickets,
-  removeJobType,
-  setJobTypeStatus,
-  updateApplicationStatus,
-  updateJobType,
-  updateSupportTicketStatus,
-  updateTestimonialStatus,
   type JobApplication,
   type JobType,
   type RegisteredUser,
@@ -21,6 +10,19 @@ import {
   type Testimonial,
 } from './store'
 import { listRegisteredUsers, signOutCloud } from './cloudAuth'
+import {
+  createJobType,
+  deleteJobType,
+  fetchApplications,
+  fetchJobTypes,
+  fetchSupportTickets,
+  fetchTestimonials,
+  patchApplicationStatus,
+  patchJobType,
+  patchJobTypeStatus,
+  patchSupportTicketStatus,
+  patchTestimonialStatus,
+} from './cloudData'
 import './Admin.css'
 
 function defaultDeadlineValue() {
@@ -56,14 +58,21 @@ function Admin() {
         return
       }
 
-      const cloudUsers = await listRegisteredUsers()
+      const [cloudUsers, apps, jobList, testimonialList, ticketList] =
+        await Promise.all([
+          listRegisteredUsers(),
+          fetchApplications(),
+          fetchJobTypes(),
+          fetchTestimonials(),
+          fetchSupportTickets(),
+        ])
       if (cancelled) return
 
       setUsers(cloudUsers)
-      setApplications(getApplications())
-      setJobs(getJobTypes())
-      setTestimonials(getTestimonials())
-      setTickets(getSupportTickets())
+      setApplications(apps)
+      setJobs(jobList)
+      setTestimonials(testimonialList)
+      setTickets(ticketList)
       setReady(true)
     }
 
@@ -79,19 +88,22 @@ function Admin() {
     navigate('/signin')
   }
 
-  function handleDecision(id: string, status: 'accepted' | 'denied') {
-    setApplications(updateApplicationStatus(id, status))
+  async function handleDecision(id: string, status: 'accepted' | 'denied') {
+    setApplications(await patchApplicationStatus(id, status))
   }
 
-  function handleTestimonialDecision(id: string, status: 'accepted' | 'denied') {
-    setTestimonials(updateTestimonialStatus(id, status))
+  async function handleTestimonialDecision(
+    id: string,
+    status: 'accepted' | 'denied',
+  ) {
+    setTestimonials(await patchTestimonialStatus(id, status))
   }
 
-  function handleTicketDecision(
+  async function handleTicketDecision(
     id: string,
     status: 'open' | 'resolved' | 'closed',
   ) {
-    setTickets(updateSupportTicketStatus(id, status))
+    setTickets(await patchSupportTicketStatus(id, status))
   }
 
   function resetJobForm() {
@@ -104,7 +116,7 @@ function Admin() {
     setJobError('')
   }
 
-  function handleJobSubmit(event: FormEvent) {
+  async function handleJobSubmit(event: FormEvent) {
     event.preventDefault()
     if (!jobTitle.trim()) {
       setJobError('Enter a job type title.')
@@ -115,29 +127,37 @@ function Admin() {
       return
     }
 
-    if (editingId) {
-      setJobs(
-        updateJobType(
-          editingId,
-          jobTitle,
-          jobLocation,
-          jobDeadline,
-          jobEmployer,
-          jobPayPerHour,
-        ),
-      )
-    } else {
-      setJobs(
-        addJobType(
-          jobTitle,
-          jobLocation,
-          jobDeadline,
-          jobEmployer,
-          jobPayPerHour,
-        ),
+    try {
+      if (editingId) {
+        setJobs(
+          await patchJobType(
+            editingId,
+            jobTitle,
+            jobLocation,
+            jobDeadline,
+            jobEmployer,
+            jobPayPerHour,
+          ),
+        )
+      } else {
+        setJobs(
+          await createJobType(
+            jobTitle,
+            jobLocation,
+            jobDeadline,
+            jobEmployer,
+            jobPayPerHour,
+          ),
+        )
+      }
+      resetJobForm()
+    } catch (err) {
+      setJobError(
+        err instanceof Error
+          ? err.message
+          : 'Could not save job. Sign in as admin in Supabase and run schema_shared.sql.',
       )
     }
-    resetJobForm()
   }
 
   function startEdit(job: JobType) {
@@ -150,22 +170,22 @@ function Admin() {
     setJobError('')
   }
 
-  function handleRemoveJob(id: string) {
-    setJobs(removeJobType(id))
+  async function handleRemoveJob(id: string) {
+    setJobs(await deleteJobType(id))
     if (editingId === id) {
       resetJobForm()
     }
   }
 
-  function handleEndJob(id: string) {
-    setJobs(setJobTypeStatus(id, 'ended'))
+  async function handleEndJob(id: string) {
+    setJobs(await patchJobTypeStatus(id, 'ended'))
     if (editingId === id) {
       resetJobForm()
     }
   }
 
-  function handleReopenJob(id: string) {
-    setJobs(setJobTypeStatus(id, 'open'))
+  async function handleReopenJob(id: string) {
+    setJobs(await patchJobTypeStatus(id, 'open'))
   }
 
   if (!ready) {
@@ -198,7 +218,8 @@ function Admin() {
         <div className="admin-intro">
           <h1>Dashboard</h1>
           <p>
-            Review users, decide on applications, and update available job types.
+            Review users from every device, decide on applications, and publish
+            job types that appear for all members instantly.
           </p>
         </div>
 
@@ -220,7 +241,7 @@ function Admin() {
         <section className="admin-panel" aria-labelledby="jobs-heading">
           <h2 id="jobs-heading">Available job types</h2>
           <p className="admin-panel-note">
-            Add or update roles shown on the WorklinksUs site.
+            Changes save to the cloud and show on every phone and computer.
           </p>
 
           <form className="admin-job-form" onSubmit={handleJobSubmit}>

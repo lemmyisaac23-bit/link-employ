@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import type { UserSession } from './auth'
+import { type JobApplication, type JobType } from './store'
 import {
-  addApplication,
-  getApplicationsForEmail,
-  getOpenJobTypes,
-  type JobApplication,
-  type JobType,
-} from './store'
+  createApplication,
+  fetchApplicationsForEmail,
+  fetchOpenJobTypes,
+} from './cloudData'
 import { asset } from './asset'
 import './Jobs.css'
 
@@ -20,8 +19,20 @@ function JobsHome() {
   const [openAboutId, setOpenAboutId] = useState<string | null>(null)
 
   useEffect(() => {
-    setJobs(getOpenJobTypes())
-    setApplications(getApplicationsForEmail(user.email))
+    let cancelled = false
+    async function load() {
+      const [openJobs, apps] = await Promise.all([
+        fetchOpenJobTypes(),
+        fetchApplicationsForEmail(user.email),
+      ])
+      if (cancelled) return
+      setJobs(openJobs)
+      setApplications(apps)
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
   }, [user.email])
 
   const filteredJobs = useMemo(() => {
@@ -34,7 +45,7 @@ function JobsHome() {
     )
   }, [jobs, query])
 
-  function handleApply(job: JobType) {
+  async function handleApply(job: JobType) {
     const alreadyApplied = applications.some(
       (app) =>
         app.role.toLowerCase() === job.title.toLowerCase() &&
@@ -45,18 +56,20 @@ function JobsHome() {
       return
     }
 
-    const updated = addApplication({
-      name: `${user.firstName} ${user.lastName}`.trim(),
-      email: user.email,
-      role: job.title,
-      location: job.location,
-    })
-    setApplications(
-      updated.filter(
-        (app) => app.email.toLowerCase() === user.email.toLowerCase(),
-      ),
-    )
-    setMessage(`Application sent for ${job.title}. An admin will review it.`)
+    try {
+      const updated = await createApplication({
+        name: `${user.firstName} ${user.lastName}`.trim(),
+        email: user.email,
+        role: job.title,
+        location: job.location,
+      })
+      setApplications(updated)
+      setMessage(`Application sent for ${job.title}. An admin will review it.`)
+    } catch (err) {
+      setMessage(
+        err instanceof Error ? err.message : 'Could not submit application.',
+      )
+    }
   }
 
   function applicationFor(jobTitle: string) {

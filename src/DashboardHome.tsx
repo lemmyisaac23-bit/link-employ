@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import type { UserSession } from './auth'
+import { type Testimonial } from './store'
 import {
-  addTestimonial,
-  getAcceptedTestimonials,
-  type Testimonial,
-} from './store'
+  createTestimonial,
+  fetchAcceptedTestimonials,
+} from './cloudData'
 import { asset } from './asset'
 import './Jobs.css'
 
@@ -20,10 +20,16 @@ function DashboardHome() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    setTestimonials(getAcceptedTestimonials().slice(0, 4))
+    let cancelled = false
+    void fetchAcceptedTestimonials().then((items) => {
+      if (!cancelled) setTestimonials(items.slice(0, 4))
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  function handleShare(event: FormEvent) {
+  async function handleShare(event: FormEvent) {
     event.preventDefault()
     setError('')
     setMessage('')
@@ -33,18 +39,23 @@ function DashboardHome() {
       return
     }
 
-    addTestimonial({
-      name: `${user.firstName} ${user.lastName}`.trim(),
-      role: role.trim() || 'WorklinksUs member',
-      quote: quote.trim(),
-    })
-
-    setQuote('')
-    setRole('')
-    setShowForm(false)
-    setMessage(
-      'Thanks! Your testimonial was sent for admin review and will appear once approved.',
-    )
+    try {
+      await createTestimonial({
+        name: `${user.firstName} ${user.lastName}`.trim(),
+        role: role.trim() || 'WorklinksUs member',
+        quote: quote.trim(),
+      })
+      setQuote('')
+      setRole('')
+      setShowForm(false)
+      setMessage(
+        'Thanks! Your testimonial was sent for admin review and will appear once approved.',
+      )
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Could not share testimonial.',
+      )
+    }
   }
 
   return (

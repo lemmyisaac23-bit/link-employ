@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import type { UserSession } from './auth'
-import { getApplicationsForEmail, type JobApplication } from './store'
+import { type JobApplication } from './store'
+import { fetchApplicationsForEmail } from './cloudData'
 import { asset } from './asset'
 import './Jobs.css'
 
@@ -10,7 +11,13 @@ function Applications() {
   const [applications, setApplications] = useState<JobApplication[]>([])
 
   useEffect(() => {
-    setApplications(getApplicationsForEmail(user.email))
+    let cancelled = false
+    void fetchApplicationsForEmail(user.email).then((apps) => {
+      if (!cancelled) setApplications(apps)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [user.email])
 
   const pending = applications.filter((app) => app.status === 'pending').length
