@@ -6,7 +6,7 @@ import {
   getUsers,
   type RegisteredUser,
 } from './store'
-import { isSupabaseConfigured, requireSupabase, SITE_URL, supabase } from './supabaseClient'
+import { isSupabaseConfigured, requireSupabase, supabase } from './supabaseClient'
 
 export type CloudProfile = {
   id: string
@@ -97,11 +97,14 @@ function friendlyAuthError(message: string): string {
     return 'Confirm your email before signing in, or disable email confirmation in Supabase Auth settings.'
   }
   if (
-    lower.includes('invalid path') ||
-    lower.includes('redirect') ||
-    lower.includes('request url')
+    lower.includes('redirect_uri') ||
+    lower.includes('redirect url') ||
+    lower.includes('not allowed')
   ) {
     return 'Signup redirect URL is not allowed. In Supabase go to Authentication → URL Configuration and set Site URL to https://worklinkus.com, then add https://worklinkus.com/** and https://www.worklinkus.com/** under Redirect URLs.'
+  }
+  if (lower.includes('invalid path') || lower.includes('request url')) {
+    return 'Could not reach the auth server from this device. Open https://worklinkus.com (not www), clear the site cache, and try again.'
   }
   if (lower.includes('password')) {
     return message
@@ -146,9 +149,6 @@ export async function registerWithCloud(
         phone: input.phone?.trim() || '',
         country: input.country?.trim() || '',
       },
-      // Always use the production site URL so mobile www/custom-domain
-      // origins do not fail Supabase redirect validation.
-      emailRedirectTo: `${SITE_URL}/jobs`,
     },
   })
 
