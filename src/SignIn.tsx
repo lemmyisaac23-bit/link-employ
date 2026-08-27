@@ -74,7 +74,13 @@ function SignIn() {
           <p className="signup-switch">
             New to WorklinksUs? <Link to="/signup">Create an account</Link>
           </p>
-          {!isSupabaseConfigured && (
+          {isSupabaseConfigured ? (
+            <p className="signup-switch" role="note">
+              Use the same email and password on any device. If your account was
+              created before cloud login, sign in once on that original device
+              first, then try this phone again.
+            </p>
+          ) : (
             <p className="signup-error" role="status">
               Cloud login is not configured yet. Sign-in only works on the device
               where the account was created.

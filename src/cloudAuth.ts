@@ -159,7 +159,20 @@ export async function registerWithCloud(
     },
   })
 
-  if (error) throw new Error(friendlyAuthError(error.message))
+  if (error) {
+    const lower = error.message.toLowerCase()
+    if (lower.includes('already registered')) {
+      // They may be re-trying signup on mobile after a partial earlier attempt.
+      try {
+        return await signInWithCloud(email, password)
+      } catch {
+        throw new Error(
+          'An account with this email already exists. Sign in instead with that password.',
+        )
+      }
+    }
+    throw new Error(friendlyAuthError(error.message))
+  }
   if (!data.user) throw new Error('Could not create your account.')
 
   // If email confirmation is enabled and no session yet, try signing in anyway
@@ -203,6 +216,96 @@ export async function registerWithCloud(
   return session
 }
 
+async function sessionFromAuthUser(
+  userId: string,
+  email: string,
+  meta: Record<string, unknown>,
+): Promise<UserSession> {
+  let profile: CloudProfile | null = null
+  try {
+    profile =
+      (await fetchProfile(userId)) ||
+      (await upsertProfile(userId, {
+        firstName: String(meta.first_name || email.split('@')[0] || 'User'),
+        lastName: String(meta.last_name || ''),
+        email,
+        phone: meta.phone ? String(meta.phone) : undefined,
+        country: meta.country ? String(meta.country) : undefined,
+      }))
+  } catch (profileError) {
+    console.warn('Profile sync failed:', profileError)
+    profile = {
+      id: userId,
+      first_name: String(meta.first_name || email.split('@')[0] || 'User'),
+      last_name: String(meta.last_name || ''),
+      email,
+      phone: meta.phone ? String(meta.phone) : null,
+      country: meta.country ? String(meta.country) : null,
+      created_at: new Date().toISOString(),
+    }
+  }
+
+  const session = profileToSession(profile)
+  setUserSession(session)
+  return session
+}
+
+/**
+ * If this device still has a pre-cloud (localStorage) account, create the same
+ * user in Supabase so sign-in works on phones afterward.
+ */
+async function migrateLocalUserToCloud(
+  email: string,
+  password: string,
+): Promise<UserSession | null> {
+  const local = checkUserCredentials(email, password)
+  if (!local.ok) return null
+
+  const client = requireSupabase()
+  const { data, error } = await client.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${SITE_URL}/jobs`,
+      data: {
+        first_name: local.user.firstName,
+        last_name: local.user.lastName,
+        phone: local.user.phone || '',
+        country: local.user.country || '',
+      },
+    },
+  })
+
+  if (error) {
+    const lower = error.message.toLowerCase()
+    if (lower.includes('already registered')) {
+      // Cloud account exists but password differs from this device's old copy.
+      throw new Error(
+        'This email already has a cloud account with a different password. Use that password, or reset it in Supabase Authentication → Users.',
+      )
+    }
+    throw new Error(friendlyAuthError(error.message))
+  }
+
+  if (!data.user) return null
+
+  if (!data.session) {
+    const signIn = await client.auth.signInWithPassword({ email, password })
+    if (signIn.error) {
+      throw new Error(
+        'Account migrated. Confirm your email (or turn off Confirm email in Supabase), then sign in again.',
+      )
+    }
+  }
+
+  return sessionFromAuthUser(data.user.id, email, {
+    first_name: local.user.firstName,
+    last_name: local.user.lastName,
+    phone: local.user.phone,
+    country: local.user.country,
+  })
+}
+
 export async function signInWithCloud(
   email: string,
   password: string,
@@ -237,41 +340,42 @@ export async function signInWithCloud(
     password: normalizedPassword,
   })
 
-  if (error) throw new Error(friendlyAuthError(error.message))
-  if (!data.user) throw new Error('Invalid email or password.')
-
-  const meta = data.user.user_metadata || {}
-  let profile: CloudProfile | null = null
-  try {
-    profile =
-      (await fetchProfile(data.user.id)) ||
-      (await upsertProfile(data.user.id, {
-        firstName: String(
-          meta.first_name || normalizedEmail.split('@')[0] || 'User',
-        ),
-        lastName: String(meta.last_name || ''),
-        email: normalizedEmail,
-        phone: meta.phone ? String(meta.phone) : undefined,
-        country: meta.country ? String(meta.country) : undefined,
-      }))
-  } catch (profileError) {
-    console.warn('Profile sync failed:', profileError)
-    profile = {
-      id: data.user.id,
-      first_name: String(
-        meta.first_name || normalizedEmail.split('@')[0] || 'User',
-      ),
-      last_name: String(meta.last_name || ''),
-      email: normalizedEmail,
-      phone: meta.phone ? String(meta.phone) : null,
-      country: meta.country ? String(meta.country) : null,
-      created_at: new Date().toISOString(),
-    }
+  if (!error && data.user) {
+    return sessionFromAuthUser(
+      data.user.id,
+      normalizedEmail,
+      data.user.user_metadata || {},
+    )
   }
 
-  const session = profileToSession(profile)
-  setUserSession(session)
-  return session
+  const cloudMessage = error?.message || 'Invalid email or password.'
+  const lower = cloudMessage.toLowerCase()
+
+  if (lower.includes('email not confirmed')) {
+    throw new Error(friendlyAuthError(cloudMessage))
+  }
+
+  // Old device-only accounts: migrate them into Supabase on first successful local match.
+  if (
+    lower.includes('invalid login credentials') ||
+    lower.includes('invalid email or password')
+  ) {
+    try {
+      const migrated = await migrateLocalUserToCloud(
+        normalizedEmail,
+        normalizedPassword,
+      )
+      if (migrated) return migrated
+    } catch (migrateError) {
+      if (migrateError instanceof Error) throw migrateError
+    }
+
+    throw new Error(
+      'No cloud account found for this email. Accounts created before cloud login only exist on the original device — sign in once there to migrate, or create a new account on this phone.',
+    )
+  }
+
+  throw new Error(friendlyAuthError(cloudMessage))
 }
 
 export async function restoreCloudSession(): Promise<UserSession | null> {
