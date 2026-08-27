@@ -1,10 +1,22 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-function cleanEnv(value: string | undefined): string {
-  return (value ?? '').trim().replace(/\/+$/, '')
+/** Normalize project URL — secrets sometimes paste the REST path by mistake. */
+function cleanSupabaseUrl(value: string | undefined): string {
+  return (value ?? '')
+    .trim()
+    .replace(/\/+$/, '')
+    .replace(/\/rest\/v1$/i, '')
+    .replace(/\/auth\/v1$/i, '')
+    .replace(/\/+$/, '')
 }
 
-const supabaseUrl = cleanEnv(import.meta.env.VITE_SUPABASE_URL as string | undefined)
+function cleanEnv(value: string | undefined): string {
+  return (value ?? '').trim()
+}
+
+const supabaseUrl = cleanSupabaseUrl(
+  import.meta.env.VITE_SUPABASE_URL as string | undefined,
+)
 const supabaseAnonKey = cleanEnv(
   import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined,
 )
