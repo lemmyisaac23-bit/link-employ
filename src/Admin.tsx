@@ -22,6 +22,7 @@ import {
   patchJobTypeStatus,
   patchSupportTicketStatus,
   patchTestimonialStatus,
+  replyToSupportTicket,
 } from './cloudData'
 import './Admin.css'
 
@@ -48,6 +49,9 @@ function Admin() {
   const [jobDeadline, setJobDeadline] = useState(defaultDeadlineValue())
   const [editingId, setEditingId] = useState<string | null>(null)
   const [jobError, setJobError] = useState('')
+  const [ticketReplies, setTicketReplies] = useState<Record<string, string>>({})
+  const [ticketReplyError, setTicketReplyError] = useState('')
+  const [ticketReplyBusy, setTicketReplyBusy] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -104,6 +108,27 @@ function Admin() {
     status: 'open' | 'resolved' | 'closed',
   ) {
     setTickets(await patchSupportTicketStatus(id, status))
+  }
+
+  async function handleTicketReply(id: string) {
+    const reply = (ticketReplies[id] ?? '').trim()
+    if (!reply) {
+      setTicketReplyError('Write a reply before sending.')
+      return
+    }
+
+    setTicketReplyError('')
+    setTicketReplyBusy(id)
+    try {
+      setTickets(await replyToSupportTicket(id, reply))
+      setTicketReplies((prev) => ({ ...prev, [id]: '' }))
+    } catch (err) {
+      setTicketReplyError(
+        err instanceof Error ? err.message : 'Could not send reply.',
+      )
+    } finally {
+      setTicketReplyBusy(null)
+    }
   }
 
   function resetJobForm() {
@@ -444,14 +469,19 @@ function Admin() {
         <section className="admin-panel" aria-labelledby="tickets-heading">
           <h2 id="tickets-heading">Support tickets</h2>
           <p className="admin-panel-note">
-            Review open tickets submitted by users.
+            Review open tickets and reply to clients.
           </p>
+          {ticketReplyError && (
+            <p className="admin-inline-error" role="alert">
+              {ticketReplyError}
+            </p>
+          )}
           {openTickets.length === 0 ? (
             <p className="admin-empty">No open support tickets right now.</p>
           ) : (
             <ul className="admin-apps">
               {openTickets.map((ticket) => (
-                <li key={ticket.id} className="admin-app">
+                <li key={ticket.id} className="admin-app admin-ticket">
                   <div className="admin-app-copy">
                     <span className="admin-list-name">{ticket.subject}</span>
                     <span className="admin-list-meta">
@@ -461,6 +491,11 @@ function Admin() {
                     <span className="admin-list-meta">
                       Opened {ticket.createdAt}
                     </span>
+                    {ticket.adminReply && (
+                      <span className="admin-ticket-existing-reply">
+                        Previous reply ({ticket.repliedAt}): {ticket.adminReply}
+                      </span>
+                    )}
                   </div>
                   <div className="admin-app-actions">
                     <button
@@ -478,6 +513,39 @@ function Admin() {
                       Close
                     </button>
                   </div>
+                  <form
+                    className="admin-ticket-reply"
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      void handleTicketReply(ticket.id)
+                    }}
+                  >
+                    <label>
+                      <span>Reply to client</span>
+                      <textarea
+                        rows={3}
+                        placeholder="Write a reply the client will see on their Support Ticket page..."
+                        value={ticketReplies[ticket.id] ?? ''}
+                        onChange={(e) =>
+                          setTicketReplies((prev) => ({
+                            ...prev,
+                            [ticket.id]: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      className="admin-btn admin-btn-accept"
+                      disabled={ticketReplyBusy === ticket.id}
+                    >
+                      {ticketReplyBusy === ticket.id
+                        ? 'Sending…'
+                        : ticket.adminReply
+                          ? 'Update reply'
+                          : 'Send reply'}
+                    </button>
+                  </form>
                 </li>
               ))}
             </ul>

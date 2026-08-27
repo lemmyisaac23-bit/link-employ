@@ -244,6 +244,24 @@
   font-size: 0.9rem;
 }
 
+.jobs-admin-reply {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(46, 184, 196, 0.28);
+  background: rgba(46, 184, 196, 0.08);
+}
+
+.jobs-admin-reply strong {
+  display: block;
+  font-size: 0.88rem;
+  color: #2eb8c4;
+}
+
+.jobs-admin-reply p {
+  color: #d7e6f2;
+}
+
 .team-grid {
   display: grid;
   gap: 1rem;

@@ -15,6 +15,7 @@ import {
   setJobTypeStatus as setJobTypeStatusLocal,
   updateApplicationStatus as updateApplicationStatusLocal,
   updateJobType as updateJobTypeLocal,
+  replyToSupportTicket as replyToSupportTicketLocal,
   updateSupportTicketStatus as updateSupportTicketStatusLocal,
   updateTestimonialStatus as updateTestimonialStatusLocal,
   type ApplicationStatus,
@@ -94,6 +95,8 @@ type TicketRow = {
   message: string
   status: SupportTicketStatus
   created_at: string
+  admin_reply?: string | null
+  replied_at?: string | null
 }
 
 function mapJob(row: JobRow): JobType {
@@ -145,6 +148,8 @@ function mapTicket(row: TicketRow): SupportTicket {
     message: row.message,
     status: row.status,
     createdAt: row.created_at,
+    adminReply: row.admin_reply?.trim() || undefined,
+    repliedAt: row.replied_at || undefined,
   }
 }
 
@@ -433,12 +438,15 @@ export async function patchTestimonialStatus(
   return fetchTestimonials()
 }
 
+const TICKET_COLUMNS =
+  'id, name, email, subject, message, status, created_at, admin_reply, replied_at'
+
 export async function fetchSupportTickets(): Promise<SupportTicket[]> {
   if (!(await cloudReady()) || !supabase) return getSupportTicketsLocal()
 
   const { data, error } = await supabase
     .from('support_tickets')
-    .select('id, name, email, subject, message, status, created_at')
+    .select(TICKET_COLUMNS)
     .order('created_at', { ascending: false })
 
   if (error || !data) {
@@ -457,7 +465,7 @@ export async function fetchSupportTicketsForEmail(
 
   const { data, error } = await supabase
     .from('support_tickets')
-    .select('id, name, email, subject, message, status, created_at')
+    .select(TICKET_COLUMNS)
     .eq('email', email.trim().toLowerCase())
     .order('created_at', { ascending: false })
 
@@ -504,6 +512,28 @@ export async function patchSupportTicketStatus(
   const { error } = await supabase
     .from('support_tickets')
     .update({ status })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+  return fetchSupportTickets()
+}
+
+export async function replyToSupportTicket(
+  id: string,
+  reply: string,
+): Promise<SupportTicket[]> {
+  const adminReply = reply.trim()
+  if (!adminReply) throw new Error('Reply cannot be empty.')
+
+  if (!(await cloudReady()) || !supabase) {
+    return replyToSupportTicketLocal(id, adminReply)
+  }
+
+  const { error } = await supabase
+    .from('support_tickets')
+    .update({
+      admin_reply: adminReply,
+      replied_at: todayStamp(),
+    })
     .eq('id', id)
   if (error) throw new Error(error.message)
   return fetchSupportTickets()

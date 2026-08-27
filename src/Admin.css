@@ -334,6 +334,62 @@
   background: rgba(46, 184, 196, 0.1);
 }
 
+.admin-ticket {
+  align-items: start;
+}
+
+.admin-ticket-existing-reply {
+  margin-top: 0.45rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(46, 184, 196, 0.28);
+  background: rgba(46, 184, 196, 0.08);
+  color: #d7e6f2;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.admin-ticket-reply {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.15rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-ticket-reply label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.admin-ticket-reply label span {
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: #c5d0db;
+}
+
+.admin-ticket-reply textarea {
+  width: 100%;
+  min-height: 5.5rem;
+  resize: vertical;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 14, 24, 0.65);
+  color: #f4f7fb;
+  font: inherit;
+}
+
+.admin-ticket-reply textarea:focus {
+  outline: 2px solid rgba(46, 184, 196, 0.45);
+  outline-offset: 1px;
+}
+
+.admin-ticket-reply .admin-btn {
+  justify-self: start;
+}
+
 .admin-status-accepted {
   color: #5ad4a8;
   font-weight: 650;

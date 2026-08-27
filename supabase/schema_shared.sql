@@ -147,8 +147,16 @@ create table if not exists public.support_tickets (
   subject text not null,
   message text not null,
   status text not null check (status in ('open', 'resolved', 'closed')) default 'open',
-  created_at date not null default (current_date)
+  created_at date not null default (current_date),
+  admin_reply text,
+  replied_at date
 );
+
+alter table public.support_tickets
+  add column if not exists admin_reply text;
+
+alter table public.support_tickets
+  add column if not exists replied_at date;
 
 create index if not exists support_tickets_email_idx on public.support_tickets (email);
 

@@ -71,6 +71,8 @@ export type SupportTicket = {
   message: string
   status: SupportTicketStatus
   createdAt: string
+  adminReply?: string
+  repliedAt?: string
 }
 
 const USERS_KEY = 'worklinkus_users'
@@ -759,6 +761,21 @@ export function updateSupportTicketStatus(
 ): SupportTicket[] {
   const updated = getSupportTickets().map((ticket) =>
     ticket.id === id ? { ...ticket, status } : ticket,
+  )
+  writeJson(TICKETS_KEY, updated)
+  return updated
+}
+
+export function replyToSupportTicket(
+  id: string,
+  reply: string,
+): SupportTicket[] {
+  const adminReply = reply.trim()
+  if (!adminReply) return getSupportTickets()
+
+  const repliedAt = todayStamp()
+  const updated = getSupportTickets().map((ticket) =>
+    ticket.id === id ? { ...ticket, adminReply, repliedAt } : ticket,
   )
   writeJson(TICKETS_KEY, updated)
   return updated

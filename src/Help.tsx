@@ -116,6 +116,13 @@ function Help() {
                   <strong>{ticket.subject}</strong>
                   <p>{ticket.message}</p>
                   <p>Opened {ticket.createdAt}</p>
+                  {ticket.adminReply && (
+                    <div className="jobs-admin-reply">
+                      <strong>Admin reply</strong>
+                      <p>{ticket.adminReply}</p>
+                      {ticket.repliedAt && <p>Replied {ticket.repliedAt}</p>}
+                    </div>
+                  )}
                 </div>
                 <span className={`jobs-status jobs-status-${ticket.status === 'open' ? 'pending' : 'accepted'}`}>
                   {ticket.status}
