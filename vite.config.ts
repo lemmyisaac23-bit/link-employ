@@ -45,7 +45,15 @@ function spaRouteHtml(): Plugin {
 }
 
 // Custom domain: https://worklinkus.com
+const assetVersion =
+  process.env.GITHUB_SHA?.slice(0, 7) ||
+  process.env.VITE_ASSET_VERSION ||
+  Date.now().toString(36)
+
 export default defineConfig({
   plugins: [react(), spaRouteHtml()],
   base: '/',
+  define: {
+    'import.meta.env.VITE_ASSET_VERSION': JSON.stringify(assetVersion),
+  },
 })

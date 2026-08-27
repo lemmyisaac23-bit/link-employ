@@ -21,6 +21,13 @@ document.documentElement.style.setProperty(
   `url('${asset('images/dash-bg.jpg')}')`,
 )
 
+// Warm the hero image early so the first screen paints faster.
+const heroPreload = document.createElement('link')
+heroPreload.rel = 'preload'
+heroPreload.as = 'image'
+heroPreload.href = asset('images/hero-workplace.jpg')
+document.head.appendChild(heroPreload)
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter basename={routerBasename}>
