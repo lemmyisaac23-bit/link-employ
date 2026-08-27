@@ -12,7 +12,9 @@ function App() {
   useEffect(() => {
     let cancelled = false
     void fetchJobTypes().then((jobs) => {
-      if (!cancelled) setRoles(jobs)
+      if (cancelled) return
+      const open = jobs.filter((job) => job.status === 'open')
+      setRoles((open.length > 0 ? open : jobs).slice(0, 2))
     })
     return () => {
       cancelled = true
