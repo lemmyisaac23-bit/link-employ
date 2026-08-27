@@ -101,10 +101,10 @@ function friendlyAuthError(message: string): string {
     lower.includes('redirect url') ||
     lower.includes('not allowed')
   ) {
-    return 'Signup redirect URL is not allowed. In Supabase go to Authentication → URL Configuration and set Site URL to https://worklinkus.com, then add https://worklinkus.com/** and https://www.worklinkus.com/** under Redirect URLs.'
+    return 'Signup redirect URL is not allowed. In Supabase go to Authentication → URL Configuration and set Site URL to https://worklinkus.com, then add https://worklinkus.com/** under Redirect URLs.'
   }
   if (lower.includes('invalid path') || lower.includes('request url')) {
-    return 'Could not reach the auth server from this device. Open https://worklinkus.com (not www), clear the site cache, and try again.'
+    return 'Could not reach the auth server from this device. Open https://worklinkus.com, clear the site cache, and try again.'
   }
   if (lower.includes('password')) {
     return message

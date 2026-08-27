@@ -7,7 +7,9 @@
     <!-- GitHub Pages SPA fallback for custom domain (site root) -->
     <script>
       const segmentCount = 0
-      const { pathname, search, hash, protocol, hostname, port } = location
+      const { pathname, search, hash, protocol, port } = location
+      // Always land on apex so www never hosts the SPA (auth + cookies).
+      const hostname = location.hostname.replace(/^www\./i, '')
       const base = pathname.split('/').slice(0, 1 + segmentCount).join('/') || ''
       const route = pathname
         .split('/')

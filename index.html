@@ -17,6 +17,16 @@
     <title>WorklinksUs — Jobs that fit across the US</title>
     <script>
       ;(function (location) {
+        // Phones often open www; keep auth/cookies on the apex domain only.
+        if (location.hostname === 'www.worklinkus.com') {
+          location.replace(
+            'https://worklinkus.com' +
+              location.pathname +
+              location.search +
+              location.hash,
+          )
+          return
+        }
         if (location.search[1] === '/') {
           var decoded = location.search
             .slice(1)
