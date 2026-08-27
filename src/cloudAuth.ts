@@ -6,7 +6,12 @@ import {
   getUsers,
   type RegisteredUser,
 } from './store'
-import { isSupabaseConfigured, requireSupabase, supabase } from './supabaseClient'
+import {
+  isSupabaseConfigured,
+  requireSupabase,
+  SITE_URL,
+  supabase,
+} from './supabaseClient'
 
 export type CloudProfile = {
   id: string
@@ -99,12 +104,12 @@ function friendlyAuthError(message: string): string {
   if (
     lower.includes('redirect_uri') ||
     lower.includes('redirect url') ||
-    lower.includes('not allowed')
+    (lower.includes('redirect') && lower.includes('not allowed'))
   ) {
-    return 'Signup redirect URL is not allowed. In Supabase go to Authentication → URL Configuration and set Site URL to https://worklinkus.com, then add https://worklinkus.com/** under Redirect URLs.'
+    return 'Signup redirect is blocked in Supabase. Open Authentication → URL Configuration, set Site URL to https://worklinkus.com, and add https://worklinkus.com/** plus https://www.worklinkus.com/** under Redirect URLs. Then retry in a private tab.'
   }
   if (lower.includes('invalid path') || lower.includes('request url')) {
-    return 'Could not reach the auth server from this device. Open https://worklinkus.com, clear the site cache, and try again.'
+    return 'Could not reach the auth server from this device. Open https://worklinkus.com/signup in a private tab and try again.'
   }
   if (lower.includes('password')) {
     return message
@@ -139,10 +144,12 @@ export async function registerWithCloud(
   const email = input.email.trim().toLowerCase()
   const password = input.password.trim()
 
+  // Always use apex — never window.location (phones often stay on www).
   const { data, error } = await client.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: `${SITE_URL}/jobs`,
       data: {
         first_name: input.firstName.trim(),
         last_name: input.lastName.trim(),
